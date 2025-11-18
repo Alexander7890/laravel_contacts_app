@@ -1,13 +1,13 @@
 <?php
 
+use App\Http\Controllers\NoteController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ContactController;
 
-Route::redirect('/', '/contacts');
+Route::redirect('/', '/notes')->name('home');
 
-Route::prefix('contacts')->group(function () {
-    Route::get('', [ContactController::class, 'index'])->name('contacts_index');
-    Route::match(['get', 'post'], 'new', [ContactController::class, 'create'])->name('contacts_new');
-    Route::match(['get', 'post'], '{id}/edit', [ContactController::class, 'edit'])->name('contacts_edit');
-    Route::post('{id}/delete', [ContactController::class, 'delete'])->name('contacts_delete');
+Route::prefix('notes')->group(function () {
+    Route::match(['get', 'post'], '', [NoteController::class, 'index'])->name('notes_index');
+    Route::match(['get', 'post'], '{id}/edit', [NoteController::class, 'edit'])->name('notes_edit');
+    Route::post('{id}/delete', [NoteController::class, 'delete'])->name('notes_delete');
+    Route::post('mass-delete', [NoteController::class, 'massDelete'])->name('notes_mass_delete');
 });
