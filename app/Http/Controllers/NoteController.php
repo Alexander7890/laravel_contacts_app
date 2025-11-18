@@ -6,6 +6,8 @@ use App\Models\Note;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Schema;
 
 class NoteController extends Controller
 {
@@ -25,6 +27,18 @@ class NoteController extends Controller
         $page = max(1, (int) $request->query('page', 1));
         $perPage = max(1, (int) $request->query('perPage', 6));
 
+        if (!$this->notesTableExists()) {
+            return $this->missingTableView(
+                lang: $lang,
+                translations: $translations,
+                search: $search,
+                sortBy: $sortBy,
+                direction: $direction,
+                page: $page,
+                perPage: $perPage,
+            );
+        }
+
         $formTitle = '';
         $formText = '';
         $errors = [];
@@ -38,10 +52,26 @@ class NoteController extends Controller
             }
 
             if (!$errors) {
-                Note::create([
-                    'title' => $formTitle,
-                    'text' => $formText !== '' ? $formText : null,
-                ]);
+                try {
+                    Note::create([
+                        'title' => $formTitle,
+                        'text' => $formText !== '' ? $formText : null,
+                    ]);
+                } catch (QueryException $e) {
+                    if ($this->isMissingTableException($e)) {
+                        return $this->missingTableView(
+                            lang: $lang,
+                            translations: $translations,
+                            search: $search,
+                            sortBy: $sortBy,
+                            direction: $direction,
+                            page: $page,
+                            perPage: $perPage,
+                        );
+                    }
+
+                    throw $e;
+                }
 
                 return redirect()->route('notes_index', [
                     'lang' => $lang,
@@ -72,17 +102,32 @@ class NoteController extends Controller
         ];
         $sortKey = strtolower($sortBy);
         $sortColumn = $allowedSorts[$sortKey] ?? 'created_at';
+        try {
+            $total = $query->count();
+            $maxPage = max(1, (int) ceil($total / $perPage));
+            if ($page > $maxPage) {
+                $page = $maxPage;
+            }
 
-        $total = $query->count();
-        $maxPage = max(1, (int) ceil($total / $perPage));
-        if ($page > $maxPage) {
-            $page = $maxPage;
+            $items = $query
+                ->orderBy($sortColumn, $direction)
+                ->forPage($page, $perPage)
+                ->get();
+        } catch (QueryException $e) {
+            if ($this->isMissingTableException($e)) {
+                return $this->missingTableView(
+                    lang: $lang,
+                    translations: $translations,
+                    search: $search,
+                    sortBy: $sortBy,
+                    direction: $direction,
+                    page: $page,
+                    perPage: $perPage,
+                );
+            }
+
+            throw $e;
         }
-
-        $items = $query
-            ->orderBy($sortColumn, $direction)
-            ->forPage($page, $perPage)
-            ->get();
 
         return view('notes.index', [
             'notes' => $items,
@@ -165,6 +210,8 @@ class NoteController extends Controller
         $common = [
             'deleteIcon' => '🗑',
             'editIcon' => '✏️',
+            'notesTableMissing' => 'The notes table is missing. Run php artisan migrate before using the app.',
+            'notesTableMissingUk' => 'Таблиця notes відсутня. Запустіть php artisan migrate перед використанням застосунку.',
         ];
 
         $uk = [
@@ -212,5 +259,53 @@ class NoteController extends Controller
         ];
 
         return $lang === 'uk' ? array_merge($common, $uk) : array_merge($common, $en);
+    }
+
+    private function notesTableExists(): bool
+    {
+        try {
+            return Schema::hasTable('notes');
+        } catch (QueryException $e) {
+            if ($this->isMissingTableException($e)) {
+                return false;
+            }
+
+            throw $e;
+        }
+    }
+
+    private function missingTableView(
+        string $lang,
+        array $translations,
+        string $search,
+        string $sortBy,
+        string $direction,
+        int $page,
+        int $perPage,
+    ): View {
+        $message = $lang === 'uk'
+            ? $translations['notesTableMissingUk']
+            : $translations['notesTableMissing'];
+
+        return view('notes.index', [
+            'notes' => collect(),
+            'total' => 0,
+            'page' => $page,
+            'perPage' => $perPage,
+            'search' => $search,
+            'sort' => $sortBy,
+            'dir' => $direction,
+            'lang' => $lang,
+            't' => $translations,
+            'errors' => [],
+            'form_title' => '',
+            'form_text' => '',
+            'setupError' => $message,
+        ]);
+    }
+
+    private function isMissingTableException(QueryException $e): bool
+    {
+        return str_contains($e->getMessage(), 'Base table or view not found');
     }
 }

@@ -102,6 +102,10 @@
     <p>{{ $t['noteNotFound'] }}</p>
   @endif
 
+  @if(isset($setupError))
+    <div class="error" style="margin-top:12px;">{{ $setupError }}</div>
+  @endif
+
   <div class="pagination">
     @php $maxPage = max(1, (int) ceil($total / $perPage)); @endphp
     <span>
