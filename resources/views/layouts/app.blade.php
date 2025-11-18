@@ -1,78 +1,105 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ request()->get('lang', 'uk') }}">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@yield('title', 'Contacts')</title>
+  <title>@yield('title', 'Notes')</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f6f7fb;margin:0}
-    .container{max-width:960px;margin:24px auto;padding:24px;background:#fff;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,0.08)}
-    h1{margin-top:0}
-    input,select,textarea{padding:8px 10px;border:1px solid #d0d5dd;border-radius:8px;font-size:14px;box-sizing:border-box;width:100%}
-    button{padding:8px 12px;border:1px solid #d0d5dd;border-radius:8px;background:#f9fafb;cursor:pointer;font-size:14px}
-    button.primary{background:#1f6feb;color:#fff;border-color:#1f6feb}
-    table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{padding:10px;border-bottom:1px solid #eef0f3;text-align:left;font-size:14px;vertical-align:top}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .space{flex:1}
-    .toolbar{display:flex;gap:8px;align-items:center;margin:12px 0;flex-wrap:wrap}
-    .pagination{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px}
-    .badge{padding:2px 8px;border-radius:999px;background:#eef6ff;color:#19478a;font-size:12px}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;place-items:center;z-index:1000}
-    .modal.open{display:grid}
-    .card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 10px 32px rgba(0,0,0,0.15);max-width:420px;width:100%}
+    :root {
+      color-scheme: light;
+    }
+    html.dark {
+      color-scheme: dark;
+    }
+    body {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 16px;
+      font-family: system-ui, sans-serif;
+      background: #ffffff;
+      color: #222222;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+    html.dark body {
+      background: #1e1e1e;
+      color: #f5f5f5;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    th {
+      text-align: left;
+    }
+    .btn {
+      padding: 6px 10px;
+      cursor: pointer;
+      border-radius: 8px;
+      border: none;
+    }
+    .btn-danger {
+      background: #c0392b;
+      color: #fff;
+    }
+    .btn-primary {
+      background: #3498db;
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #7f8c8d;
+      color: #fff;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 6px 8px;
+      box-sizing: border-box;
+      border-radius: 8px;
+      border: 1px solid #d0d5dd;
+      background: inherit;
+      color: inherit;
+    }
+    .error {
+      color: crimson;
+      font-size: 12px;
+    }
+    .pagination {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    a { color: inherit; }
   </style>
+  @yield('styles')
 </head>
 <body>
-  <div class="container">
-    @yield('content')
-  </div>
-
-  <div id="modal" class="modal">
-    <div class="card">
-      <h3 id="modal-title">Confirm</h3>
-      <div id="modal-body" style="margin:12px 0"></div>
-      <div style="display:flex;justify-content:flex-end;gap:8px">
-        <button type="button" onclick="Modal.close()">Cancel</button>
-        <button type="button" class="primary" id="modal-confirm">Confirm</button>
-      </div>
-    </div>
-  </div>
+  @yield('content')
 
   <script>
-    const Modal = (function () {
-      const modal = document.getElementById('modal');
-      const body = document.getElementById('modal-body');
-      const confirmBtn = document.getElementById('modal-confirm');
-      let currentForm = null;
-
-      function open(message, form) {
-        body.innerHTML = message;
-        currentForm = form;
-        modal.classList.add('open');
-      }
-
-      function close() {
-        modal.classList.remove('open');
-        currentForm = null;
-      }
-
-      confirmBtn.addEventListener('click', function () {
-        if (currentForm) {
-          const form = currentForm;
-          close();
-          form.submit();
+    (function() {
+      const LS_THEME_KEY = 'notes:theme';
+      function applyTheme(theme) {
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
         }
-      });
-
-      return {
-        confirm(message, form) {
-          open(message, form);
-          return false;
-        },
-        close
+      }
+      const saved = localStorage.getItem(LS_THEME_KEY) || 'light';
+      applyTheme(saved);
+      window.toggleTheme = function() {
+        const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem(LS_THEME_KEY, next);
+        applyTheme(next);
       };
     })();
   </script>
+  @yield('scripts')
 </body>
 </html>
