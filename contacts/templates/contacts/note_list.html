@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Менеджер нотаток{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Менеджер нотаток</h1>
+  <a class="btn btn-primary" href="{% url 'contacts:note_create' %}">Додати нотатку</a>
+</div>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-sm-4">
+    <label class="form-label">Пошук</label>
+    <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Заголовок або текст...">
+  </div>
+  <div class="col-sm-3">
+    <label class="form-label">Сортувати за</label>
+    <div class="input-group">
+      <select name="sort" class="form-select">
+        <option value="created_at" {% if sort == 'created_at' %}selected{% endif %}>Датою створення</option>
+        <option value="title" {% if sort == 'title' %}selected{% endif %}>Заголовком</option>
+      </select>
+      <select name="dir" class="form-select">
+        <option value="desc" {% if dir == 'desc' %}selected{% endif %}>↓</option>
+        <option value="asc" {% if dir == 'asc' %}selected{% endif %}>↑</option>
+      </select>
+    </div>
+  </div>
+  <div class="col-sm-2">
+    <label class="form-label">На сторінці</label>
+    <select name="perPage" class="form-select">
+      {% for size in 3 6 10 20 %}
+        <option value="{{ size }}" {% if per_page == size %}selected{% endif %}>{{ size }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-sm-3 d-flex gap-2">
+    <button type="submit" class="btn btn-secondary mt-3">Застосувати</button>
+    <a href="{% url 'contacts:note_list' %}" class="btn btn-outline-secondary mt-3" id="clear-filters">Очистити</a>
+  </div>
+</form>
+
+{% if notes %}
+  <div class="list-group mb-3">
+    {% for note in notes %}
+      <a class="list-group-item list-group-item-action" href="{% url 'contacts:note_detail' note.pk %}">
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1">{{ note.title }}</h5>
+          <small class="text-muted">{{ note.created_at|date:'Y-m-d H:i' }}</small>
+        </div>
+        {% if note.text %}
+          <p class="mb-1">{{ note.text|truncatechars:180 }}</p>
+        {% else %}
+          <p class="mb-1 text-muted">(без тексту)</p>
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>Нотаток не знайдено.</p>
+{% endif %}
+
+{% if is_paginated %}
+<nav aria-label="Notes pagination">
+  <ul class="pagination">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search }}&sort={{ sort }}&dir={{ dir }}&perPage={{ per_page }}">«</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">«</span></li>
+    {% endif %}
+    <li class="page-item disabled"><span class="page-link">Сторінка {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search }}&sort={{ sort }}&dir={{ dir }}&perPage={{ per_page }}">»</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">»</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

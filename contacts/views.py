@@ -4,63 +4,76 @@ from django.db.models import Q
 from django.urls import reverse_lazy
 from django.views import generic
 
-from .forms import ContactForm
-from .models import Contact, ContactGroup
+from .forms import NoteForm
+from .models import Note
 
 
-class ContactListView(generic.ListView):
-    model = Contact
-    template_name = 'contacts/contact_list.html'
-    context_object_name = 'contacts'
-    paginate_by = 10
+class NoteListView(generic.ListView):
+    model = Note
+    template_name = 'contacts/note_list.html'
+    context_object_name = 'notes'
+    paginate_by = 6
+
+    def get_paginate_by(self, queryset):
+        per_page = self.request.GET.get('perPage')
+        try:
+            return max(1, int(per_page)) if per_page else self.paginate_by
+        except (TypeError, ValueError):
+            return self.paginate_by
 
     def get_queryset(self):
-        queryset = Contact.objects.select_related('group').order_by('name')
+        queryset = Note.objects.all()
         search_term = self.request.GET.get('q', '').strip()
-        group_id = self.request.GET.get('group')
+        sort = self.request.GET.get('sort', 'created_at').lower()
+        direction = self.request.GET.get('dir', 'desc').lower()
 
         if search_term:
             queryset = queryset.filter(
-                Q(name__icontains=search_term)
-                | Q(email__icontains=search_term)
-                | Q(phone__icontains=search_term)
-                | Q(note__icontains=search_term)
+                Q(title__icontains=search_term) | Q(text__icontains=search_term)
             )
 
-        if group_id:
-            queryset = queryset.filter(group_id=group_id)
-
-        return queryset
+        allowed_sorts = {
+            'created_at': 'created_at',
+            'title': 'title',
+        }
+        sort_field = allowed_sorts.get(sort, 'created_at')
+        prefix = '' if direction == 'asc' else '-'
+        return queryset.order_by(f"{prefix}{sort_field}")
 
     def get_context_data(self, **kwargs: Any):
         context = super().get_context_data(**kwargs)
-        context['groups'] = ContactGroup.objects.all()
-        context['active_group'] = self.request.GET.get('group', '')
-        context['search_term'] = self.request.GET.get('q', '')
+        context.update(
+            {
+                'search': self.request.GET.get('q', ''),
+                'sort': self.request.GET.get('sort', 'created_at'),
+                'dir': self.request.GET.get('dir', 'desc'),
+                'per_page': self.get_paginate_by(self.get_queryset()),
+            }
+        )
         return context
 
 
-class ContactDetailView(generic.DetailView):
-    model = Contact
-    template_name = 'contacts/contact_detail.html'
-    context_object_name = 'contact'
+class NoteDetailView(generic.DetailView):
+    model = Note
+    template_name = 'contacts/note_detail.html'
+    context_object_name = 'note'
 
 
-class ContactCreateView(generic.CreateView):
-    model = Contact
-    form_class = ContactForm
-    template_name = 'contacts/contact_form.html'
-    success_url = reverse_lazy('contacts:contact_list')
+class NoteCreateView(generic.CreateView):
+    model = Note
+    form_class = NoteForm
+    template_name = 'contacts/note_form.html'
+    success_url = reverse_lazy('contacts:note_list')
 
 
-class ContactUpdateView(generic.UpdateView):
-    model = Contact
-    form_class = ContactForm
-    template_name = 'contacts/contact_form.html'
-    success_url = reverse_lazy('contacts:contact_list')
+class NoteUpdateView(generic.UpdateView):
+    model = Note
+    form_class = NoteForm
+    template_name = 'contacts/note_form.html'
+    success_url = reverse_lazy('contacts:note_list')
 
 
-class ContactDeleteView(generic.DeleteView):
-    model = Contact
-    template_name = 'contacts/contact_confirm_delete.html'
-    success_url = reverse_lazy('contacts:contact_list')
+class NoteDeleteView(generic.DeleteView):
+    model = Note
+    template_name = 'contacts/note_confirm_delete.html'
+    success_url = reverse_lazy('contacts:note_list')

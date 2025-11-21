@@ -1,15 +1,15 @@
 (function () {
-    const clearButton = document.querySelector('[data-clear-filters]');
+    const clearButton = document.getElementById('clear-filters');
     if (!clearButton) {
         return;
     }
 
-    clearButton.addEventListener('click', () => {
-        const searchInput = document.querySelector('input[name="q"]');
-        const groupSelect = document.querySelector('select[name="group"]');
-        if (searchInput) searchInput.value = '';
-        if (groupSelect) groupSelect.selectedIndex = 0;
+    clearButton.addEventListener('click', (event) => {
+        event.preventDefault();
         const form = clearButton.closest('form');
-        if (form) form.submit();
+        if (form) {
+            const url = clearButton.getAttribute('href');
+            window.location.href = url || '#';
+        }
     });
 })();

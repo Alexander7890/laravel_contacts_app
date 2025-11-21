@@ -1,16 +1,13 @@
 from django import forms
 
-from .models import Contact
+from .models import Note
 
 
-class ContactForm(forms.ModelForm):
+class NoteForm(forms.ModelForm):
     class Meta:
-        model = Contact
-        fields = ['name', 'email', 'phone', 'note', 'group']
+        model = Note
+        fields = ['title', 'text']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Повне ім’я'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@example.com'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+380…'}),
-            'note': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'group': forms.Select(attrs={'class': 'form-select'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Заголовок нотатки'}),
+            'text': forms.Textarea(attrs={'class': 'form-control', 'rows': 6, 'placeholder': 'Текст…'}),
         }

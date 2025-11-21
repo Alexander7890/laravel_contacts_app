@@ -1,15 +1,10 @@
 from django.contrib import admin
 
-from .models import Contact, ContactGroup
+from .models import Note
 
 
-@admin.register(Contact)
-class ContactAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'phone', 'group')
-    list_filter = ('group',)
-    search_fields = ('name', 'email', 'phone', 'note')
-
-
-@admin.register(ContactGroup)
-class ContactGroupAdmin(admin.ModelAdmin):
-    search_fields = ('name',)
+@admin.register(Note)
+class NoteAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'updated_at')
+    search_fields = ('title', 'text')
+    ordering = ('-created_at',)

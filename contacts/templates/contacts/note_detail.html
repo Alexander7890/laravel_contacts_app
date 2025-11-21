@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}{{ note.title }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'contacts:note_list' %}" class="btn btn-link">← До списку</a>
+<div class="card mt-2">
+  <div class="card-body">
+    <h1 class="h4 mb-2">{{ note.title }}</h1>
+    <p class="text-muted mb-3">Створено: {{ note.created_at|date:'Y-m-d H:i' }}</p>
+    {% if note.text %}
+      <p class="mb-4">{{ note.text|linebreaks }}</p>
+    {% else %}
+      <p class="text-muted">(без тексту)</p>
+    {% endif %}
+    <div class="d-flex gap-2">
+      <a class="btn btn-secondary" href="{% url 'contacts:note_edit' note.pk %}">Редагувати</a>
+      <a class="btn btn-outline-danger" href="{% url 'contacts:note_delete' note.pk %}">Видалити</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
