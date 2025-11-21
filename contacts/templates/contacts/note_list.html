@@ -34,7 +34,7 @@
   <div class="col-sm-2">
     <label class="form-label">На сторінці</label>
     <select name="perPage" class="form-select">
-      {% for size in 3 6 10 20 %}
+      {% for size in page_sizes %}
         <option value="{{ size }}" {% if per_page == size %}selected{% endif %}>{{ size }}</option>
       {% endfor %}
     </select>

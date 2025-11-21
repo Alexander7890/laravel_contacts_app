@@ -58,6 +58,7 @@ class NoteListView(generic.ListView):
                 'sort': self.request.GET.get('sort', 'created_at'),
                 'dir': self.request.GET.get('dir', 'desc'),
                 'per_page': self.get_paginate_by(self.get_queryset()),
+                'page_sizes': [3, 6, 10, 20],
                 'setup_error': (
                     'База даних не ініціалізована. Виконайте `python manage.py migrate`.'
                     if self.table_missing
