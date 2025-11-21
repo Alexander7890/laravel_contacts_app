@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}{{ t.title }}{% endblock %}
+
+{% block content %}
+  <h1>{{ t.title }}</h1>
+
+  <form method="get" action="{% url 'contacts:note_list' %}" style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
+    <input
+      type="text"
+      name="q"
+      placeholder="{{ t.searchPlaceholder }}"
+      value="{{ search }}"
+    />
+    <input type="hidden" name="lang" value="{{ lang }}"/>
+    <button type="submit" class="btn btn-secondary">{{ t.find }}</button>
+    <a href="{% url 'contacts:note_list' %}?lang={{ lang }}" class="btn btn-secondary" style="text-decoration:none; display:inline-block; padding:6px 10px;">{{ t.clear }}</a>
+
+    <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+      <button type="button" class="btn" onclick="toggleTheme()">
+        {% if lang == 'uk' %}🌗 Тема{% else %}🌗 Theme{% endif %}
+      </button>
+
+      <select name="lang" onchange="this.form.submit()">
+        <option value="uk" {% if lang == 'uk' %}selected{% endif %}>🇺🇦 Укр</option>
+        <option value="en" {% if lang == 'en' %}selected{% endif %}>🇬🇧 Eng</option>
+      </select>
+
+      <label style="font-size:13px;">{{ t.sortBy }}</label>
+      <select name="sort" onchange="this.form.submit()">
+        <option value="created_at" {% if sort == 'created_at' %}selected{% endif %}>{{ t.date }}</option>
+        <option value="title" {% if sort == 'title' %}selected{% endif %}>{{ t.noteTitle }}</option>
+      </select>
+      <select name="dir" onchange="this.form.submit()">
+        <option value="desc" {% if dir == 'desc' %}selected{% endif %}>↓</option>
+        <option value="asc" {% if dir == 'asc' %}selected{% endif %}>↑</option>
+      </select>
+    </div>
+  </form>
+
+  <form method="post" action="{% url 'contacts:note_list' %}?{{ request.GET.urlencode }}" style="display:grid; gap:8px; margin-bottom:16px;">
+    {% csrf_token %}
+    <input type="hidden" name="lang" value="{{ lang }}"/>
+    <input type="hidden" name="action" value="create"/>
+    <div>
+      <input type="text" name="title" placeholder="{{ t.noteTitle }} *" value="{{ form_title }}"/>
+      {% if errors.title %}
+        <div class="error">{{ errors.title }}</div>
+      {% endif %}
+    </div>
+    <textarea name="text" rows="6" placeholder="{{ t.noteText }}">{{ form_text }}</textarea>
+    <button type="submit" class="btn btn-primary">{{ t.addNote }}</button>
+  </form>
+
+  {% if notes %}
+    <form id="mass-delete-form" method="post" action="{% url 'contacts:note_list' %}?lang={{ lang }}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="mass_delete"/>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>{{ t.noteTitle }}</th>
+          <th>{{ t.noteText }}</th>
+          <th>{{ t.date }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for note in notes %}
+        <tr>
+          <td>
+            <input type="checkbox" name="ids" value="{{ note.id }}" form="mass-delete-form"/>
+          </td>
+          <td><strong>{{ note.title }}</strong></td>
+          <td>
+            {% with text=note.text|default:'—' %}
+              {% if text|length > 180 %}
+                {{ text|slice:":180" }}…
+              {% else %}
+                {{ text }}
+              {% endif %}
+            {% endwith %}
+          </td>
+          <td>{{ note.created_at|date:'Y-m-d H:i' }}</td>
+          <td style="display:flex; gap:6px;">
+            <a href="{% url 'contacts:note_edit' note.id %}?lang={{ lang }}" class="btn btn-secondary" style="text-decoration:none;">{{ t.edit }}</a>
+            <form method="post" action="{% url 'contacts:note_delete' note.id %}?lang={{ lang }}" onsubmit="return confirm('{{ t.confirmDelete }} #{{ note.id }}?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">{{ t.delete }}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <div style="margin-top:8px;">
+      <button type="submit" class="btn btn-danger" form="mass-delete-form">{{ t.massDelete }}</button>
+    </div>
+  {% else %}
+    <p>{{ t.noteNotFound }}</p>
+  {% endif %}
+
+  {% if setup_error %}
+    <div class="error" style="margin-top:12px;">{{ setup_error }}</div>
+  {% endif %}
+
+  <div class="pagination">
+    {% with max_page=page_obj.paginator.num_pages %}
+      <span>
+        {{ t.page }} {{ page_obj.number }} / {{ max_page }}
+      </span>
+      {% if page_obj.has_previous %}
+        <a href="{% url 'contacts:note_list' %}?page={{ page_obj.previous_page_number }}&q={{ search }}&sort={{ sort }}&dir={{ dir }}&perPage={{ per_page }}&lang={{ lang }}" class="btn btn-secondary" style="text-decoration:none;">«</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a href="{% url 'contacts:note_list' %}?page={{ page_obj.next_page_number }}&q={{ search }}&sort={{ sort }}&dir={{ dir }}&perPage={{ per_page }}&lang={{ lang }}" class="btn btn-secondary" style="text-decoration:none;">»</a>
+      {% endif %}
+    {% endwith %}
+    <form method="get" action="{% url 'contacts:note_list' %}" style="margin-left:16px;">
+      <input type="hidden" name="lang" value="{{ lang }}"/>
+      <input type="hidden" name="q" value="{{ search }}"/>
+      <input type="hidden" name="sort" value="{{ sort }}"/>
+      <input type="hidden" name="dir" value="{{ dir }}"/>
+      <label>
+        {{ t.perPage }}
+        <select name="perPage" onchange="this.form.submit()">
+          {% for size in page_sizes %}
+            <option value="{{ size }}" {% if per_page == size %}selected{% endif %}>{{ size }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </form>
+  </div>
+{% endblock %}

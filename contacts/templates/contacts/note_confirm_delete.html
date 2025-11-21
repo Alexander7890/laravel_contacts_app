@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}{{ t.deleteModal }}{% endblock %}
+
+{% block content %}
+  <h1>{{ t.deleteModal }}</h1>
+  <p>{{ t.confirmDelete }} «{{ object.title }}»?</p>
+  <form method="post">
+    {% csrf_token %}
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button type="submit" class="btn btn-danger">{{ t.delete }}</button>
+      <a href="{% url 'contacts:note_list' %}?lang={{ lang }}" class="btn btn-secondary" style="text-decoration:none;">{{ t.back }}</a>
+    </div>
+  </form>
+{% endblock %}
