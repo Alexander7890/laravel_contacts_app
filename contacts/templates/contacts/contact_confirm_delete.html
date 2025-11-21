@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Видалити контакт{% endblock page_title %}
+
+{% block content %}
+<div class="alert alert-warning">
+    Ви впевнені, що хочете видалити контакт <strong>{{ object.name }}</strong>?
+</div>
+<form method="post">
+    {% csrf_token %}
+    <a class="btn btn-outline-secondary" href="{% url 'contacts:contact_list' %}">Скасувати</a>
+    <button class="btn btn-danger" type="submit">Видалити</button>
+</form>
+{% endblock content %}

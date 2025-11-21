@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+.env
+.venv/
+venv/
+
+# Django
+staticfiles/
+
+# Node
+node_modules/
+
+# IDE
+*.swp
+.idea/
+.vscode/
+
+# Composer / PHP (legacy)
+vendor/
+composer.lock
+composer.phar
+
+# OS
+.DS_Store
