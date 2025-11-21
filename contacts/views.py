@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.db import OperationalError
 from django.db.models import Q
 from django.urls import reverse_lazy
 from django.views import generic
@@ -13,6 +14,10 @@ class NoteListView(generic.ListView):
     template_name = 'contacts/note_list.html'
     context_object_name = 'notes'
     paginate_by = 6
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.table_missing = False
 
     def get_paginate_by(self, queryset):
         per_page = self.request.GET.get('perPage')
@@ -38,7 +43,12 @@ class NoteListView(generic.ListView):
         }
         sort_field = allowed_sorts.get(sort, 'created_at')
         prefix = '' if direction == 'asc' else '-'
-        return queryset.order_by(f"{prefix}{sort_field}")
+        try:
+            return queryset.order_by(f"{prefix}{sort_field}")
+        except OperationalError:
+            # Handle the common case where migrations were not run yet.
+            self.table_missing = True
+            return Note.objects.none()
 
     def get_context_data(self, **kwargs: Any):
         context = super().get_context_data(**kwargs)
@@ -48,6 +58,11 @@ class NoteListView(generic.ListView):
                 'sort': self.request.GET.get('sort', 'created_at'),
                 'dir': self.request.GET.get('dir', 'desc'),
                 'per_page': self.get_paginate_by(self.get_queryset()),
+                'setup_error': (
+                    'База даних не ініціалізована. Виконайте `python manage.py migrate`.'
+                    if self.table_missing
+                    else ''
+                ),
             }
         )
         return context
