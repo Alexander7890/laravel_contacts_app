@@ -1,29 +1,23 @@
 {% extends 'base.html' %}
-{% block title %}{% if form.instance.pk %}Редагувати нотатку{% else %}Створити нотатку{% endif %}{% endblock %}
+{% block title %}{{ t.editModal if form.instance.pk else t.addNote }}{% endblock %}
 
 {% block content %}
-<a href="{% url 'contacts:note_list' %}" class="btn btn-link">← До списку</a>
-<div class="card mt-2">
-  <div class="card-body">
-    <h1 class="h4 mb-3">{% if form.instance.pk %}Редагувати нотатку{% else %}Нова нотатка{% endif %}</h1>
-    <form method="post">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label class="form-label">Заголовок *</label>
-        {{ form.title }}
-        {% if form.title.errors %}
-          <div class="text-danger small">{{ form.title.errors|join:', ' }}</div>
-        {% endif %}
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Текст</label>
-        {{ form.text }}
-      </div>
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Зберегти</button>
-        <a class="btn btn-outline-secondary" href="{% url 'contacts:note_list' %}">Скасувати</a>
-      </div>
-    </form>
-  </div>
-</div>
+  <h1>{{ t.editModal if form.instance.pk else t.addNote }}</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    <div style="margin-bottom:8px;">
+      <label>{{ t.noteTitle }}</label>
+      <input type="text" name="title" value="{{ form.data.title|default:form.instance.title|default:'' }}" required />
+      {% if form.errors.title %}
+        <div class="error">{{ form.errors.title|join:', ' }}</div>
+      {% endif %}
+    </div>
+    <div style="margin-bottom:8px;">
+      <label>{{ t.noteText }}</label>
+      <textarea name="text" rows="6">{{ form.data.text|default:form.instance.text|default_if_none:'' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ t.save }}</button>
+    <a href="{% url 'contacts:note_list' %}?lang={{ lang }}" class="btn btn-secondary" style="text-decoration:none;">{{ t.back }}</a>
+  </form>
 {% endblock %}

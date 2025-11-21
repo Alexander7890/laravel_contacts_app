@@ -2,20 +2,16 @@
 {% block title %}{{ note.title }}{% endblock %}
 
 {% block content %}
-<a href="{% url 'contacts:note_list' %}" class="btn btn-link">← До списку</a>
-<div class="card mt-2">
-  <div class="card-body">
-    <h1 class="h4 mb-2">{{ note.title }}</h1>
-    <p class="text-muted mb-3">Створено: {{ note.created_at|date:'Y-m-d H:i' }}</p>
-    {% if note.text %}
-      <p class="mb-4">{{ note.text|linebreaks }}</p>
-    {% else %}
-      <p class="text-muted">(без тексту)</p>
-    {% endif %}
-    <div class="d-flex gap-2">
-      <a class="btn btn-secondary" href="{% url 'contacts:note_edit' note.pk %}">Редагувати</a>
-      <a class="btn btn-outline-danger" href="{% url 'contacts:note_delete' note.pk %}">Видалити</a>
-    </div>
+  <h1>{{ note.title }}</h1>
+  <p style="color: #777;">{{ t.date }}: {{ note.created_at|date:'Y-m-d H:i' }}</p>
+  {% if note.text %}
+    <p>{{ note.text|linebreaks }}</p>
+  {% else %}
+    <p style="color: #777;">—</p>
+  {% endif %}
+  <div style="display:flex; gap:8px; align-items:center; margin-top:12px;">
+    <a class="btn btn-secondary" href="{% url 'contacts:note_edit' note.pk %}?lang={{ lang }}">{{ t.edit }}</a>
+    <a class="btn btn-danger" href="{% url 'contacts:note_delete' note.pk %}?lang={{ lang }}">{{ t.delete }}</a>
+    <a class="btn btn-secondary" href="{% url 'contacts:note_list' %}?lang={{ lang }}" style="text-decoration:none;">{{ t.back }}</a>
   </div>
-</div>
 {% endblock %}

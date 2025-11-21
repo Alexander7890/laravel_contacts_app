@@ -1,19 +1,14 @@
 {% extends 'base.html' %}
-{% block title %}Видалити нотатку{% endblock %}
+{% block title %}{{ t.deleteModal }}{% endblock %}
 
 {% block content %}
-<a href="{% url 'contacts:note_list' %}" class="btn btn-link">← До списку</a>
-<div class="card mt-2">
-  <div class="card-body">
-    <h1 class="h4 mb-3">Видалити нотатку</h1>
-    <p>Ви впевнені, що хочете видалити «{{ object.title }}»?</p>
-    <form method="post">
-      {% csrf_token %}
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-danger">Видалити</button>
-        <a class="btn btn-outline-secondary" href="{% url 'contacts:note_detail' object.pk %}">Скасувати</a>
-      </div>
-    </form>
-  </div>
-</div>
+  <h1>{{ t.deleteModal }}</h1>
+  <p>{{ t.confirmDelete }} «{{ object.title }}»?</p>
+  <form method="post">
+    {% csrf_token %}
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button type="submit" class="btn btn-danger">{{ t.delete }}</button>
+      <a href="{% url 'contacts:note_list' %}?lang={{ lang }}" class="btn btn-secondary" style="text-decoration:none;">{{ t.back }}</a>
+    </div>
+  </form>
 {% endblock %}
