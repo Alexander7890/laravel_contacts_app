@@ -15,14 +15,34 @@
 
 > Проєкт використовує Python 3.11+ і SQLite за замовчуванням.
 
+### Linux / macOS (bash/zsh)
+
 ```bash
 # Створити та активувати віртуальне середовище (приклад для venv)
 python -m venv .venv
-source .venv/bin/activate  # або .venv\Scripts\activate в Windows
+source .venv/bin/activate
 
-# Встановити залежності
-pip install -r requirements.txt
+# Встановити залежності *вже всередині активованого середовища*
+python -m pip install -r requirements.txt
 ```
+
+### Windows PowerShell
+
+```powershell
+# Створити віртуальне середовище
+python -m venv .venv
+
+# Активувати середовище (PowerShell)
+.\.venv\Scripts\Activate.ps1
+
+# Якщо бачите помилку про політику виконання, дозвольте скрипти лише для поточного користувача:
+#   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+
+# Встановити залежності *після активації* (уникає помилок "ModuleNotFoundError: No module named 'django'")
+python -m pip install -r requirements.txt
+```
+
+> Порада: використовуйте `python -m pip ...`, щоб упевнитися, що бібліотеки ставляться в обране середовище, а не в системний Python.
 
 ## 2. Ініціалізація бази та запуск
 
