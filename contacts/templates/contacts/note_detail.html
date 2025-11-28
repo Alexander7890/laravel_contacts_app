@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}{{ note.title }}{% endblock %}
+
+{% block content %}
+  <h1>{{ note.title }}</h1>
+  <p style="color: #777;">{{ t.date }}: {{ note.created_at|date:'Y-m-d H:i' }}</p>
+  {% if note.text %}
+    <p>{{ note.text|linebreaks }}</p>
+  {% else %}
+    <p style="color: #777;">—</p>
+  {% endif %}
+  <div style="display:flex; gap:8px; align-items:center; margin-top:12px;">
+    <a class="btn btn-secondary" href="{% url 'contacts:note_edit' note.pk %}?lang={{ lang }}">{{ t.edit }}</a>
+    <a class="btn btn-danger" href="{% url 'contacts:note_delete' note.pk %}?lang={{ lang }}">{{ t.delete }}</a>
+    <a class="btn btn-secondary" href="{% url 'contacts:note_list' %}?lang={{ lang }}" style="text-decoration:none;">{{ t.back }}</a>
+  </div>
+{% endblock %}

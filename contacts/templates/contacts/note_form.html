@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{{ t.editModal if form.instance.pk else t.addNote }}{% endblock %}
+
+{% block content %}
+  <h1>{{ t.editModal if form.instance.pk else t.addNote }}</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    <div style="margin-bottom:8px;">
+      <label>{{ t.noteTitle }}</label>
+      <input type="text" name="title" value="{{ form.data.title|default:form.instance.title|default:'' }}" required />
+      {% if form.errors.title %}
+        <div class="error">{{ form.errors.title|join:', ' }}</div>
+      {% endif %}
+    </div>
+    <div style="margin-bottom:8px;">
+      <label>{{ t.noteText }}</label>
+      <textarea name="text" rows="6">{{ form.data.text|default:form.instance.text|default_if_none:'' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ t.save }}</button>
+    <a href="{% url 'contacts:note_list' %}?lang={{ lang }}" class="btn btn-secondary" style="text-decoration:none;">{{ t.back }}</a>
+  </form>
+{% endblock %}
