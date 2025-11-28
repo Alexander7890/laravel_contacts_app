@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'kostin/laravel-contacts-app',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => '4baf078c38697e6e48bd9b3648776947f26f02ed',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -341,9 +341,9 @@
             ),
         ),
         'kostin/laravel-contacts-app' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => '4baf078c38697e6e48bd9b3648776947f26f02ed',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
